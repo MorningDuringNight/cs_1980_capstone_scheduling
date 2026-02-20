@@ -1,4 +1,4 @@
-package capstone-scheduling.src.main.java.capstoneSchedulingApp;
+package capstoneSchedulingApp;
 
 class Thruple<A, B, C> {
 
