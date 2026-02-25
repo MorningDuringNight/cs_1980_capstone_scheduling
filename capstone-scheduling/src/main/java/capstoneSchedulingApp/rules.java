@@ -1,5 +1,7 @@
 package capstoneSchedulingApp;
 
+import static org.mockito.ArgumentMatchers.any;
+
 class Thruple<A, B, C> {
 
     private final A first;
@@ -26,8 +28,8 @@ class Thruple<A, B, C> {
 }
 
 //requires AM for capital times
-public class rules {
-    static Thruple<Integer,Integer,Boolean> StringToHour(String timing) {
+final public class rules {
+    public static Thruple<Integer,Integer,Boolean> StringToHour(String timing) {
         int hours = 0;
         int mins = 0;
         Boolean halfer = true; // true is AM false is PM
@@ -48,4 +50,26 @@ public class rules {
 
         return myThruple;
     }
+    public static int CalculatTimings(Thruple<Integer, Integer, Boolean> Thruple1, Thruple<Integer, Integer, Boolean> Thruple2){
+
+        int save1, save2;
+        Boolean save3;
+        int startTimeHR =  Thruple1.getFirst();
+        int startTimeMin = Thruple1.getSecond();
+
+        int endTimeHR =  Thruple2.getFirst();
+        int endTimeMin = Thruple2.getSecond();
+        //both AM
+        if(Thruple1.getThird() && Thruple2.getThird()){
+            save1 = endTimeHR - startTimeHR;
+            save2 = endTimeMin - startTimeMin;
+        }
+        else if (Thruple1.getThird() && !Thruple2.getThird()){
+            save1 = endTimeHR - startTimeHR;
+            save2 = endTimeMin - startTimeMin;
+        }
+        return 0;
+    }
+
+    // 
 }
