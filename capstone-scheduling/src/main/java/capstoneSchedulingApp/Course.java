@@ -61,6 +61,6 @@ public class Course {
     }
 
     public String toString() {
-        return courseNumber + " " + instructor + " " + days + " " + startTime + "-" + endTime;
+        return classNumber + " " + courseNumber + " " + associatedClassNumber + " " + type + " " + instructor + " " + days + " " + startTime + "-" + endTime;
     }
 }

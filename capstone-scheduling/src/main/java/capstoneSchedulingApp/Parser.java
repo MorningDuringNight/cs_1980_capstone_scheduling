@@ -10,9 +10,9 @@ public class Parser {
         Schedule sched = new Schedule(5, 480, 1200, 5);
         // Basic parsing
         try (Scanner scanner = new Scanner(new File(fileName))) {
-            scanner.nextLine(); // Skip over label line
+            scanner.nextLine(); // Skip over label line, may want to parse from it later
             while (scanner.hasNextLine()) {
-                String[] lineArray = scanner.nextLine().split(delin); // We can not hard-code later
+                String[] lineArray = scanner.nextLine().split(delin); // We can *not* hard-code later
 
                 if (!lineArray[5].equals("ByAppt")) {
                     //Super hard coded, might parse correct columns from label line
