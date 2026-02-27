@@ -1,0 +1,8 @@
+Capstone Scheduling Tool - Help
+
+1. Load CSV
+    - Click "Load CSV" and choose a valid schedule CSV file.
+
+2. Parse
+    - Click this after loading a file.
+    - The schedule will display in the main window
