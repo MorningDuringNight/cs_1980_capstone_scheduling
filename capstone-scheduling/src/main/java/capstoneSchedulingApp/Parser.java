@@ -34,7 +34,7 @@ public class Parser {
                 
                 statement.execute(sql);
 
-                sql = "INSERT INTO classes(clas_num,course_num,asso_num,days,start,end,room,instructor,type,enroll) VALUES(?,?,?,?,?,?,?,?,?,?)";
+                sql = "INSERT OR IGNORE INTO classes(clas_num,course_num,asso_num,days,start,end,room,instructor,type,enroll) VALUES(?,?,?,?,?,?,?,?,?,?)";
 
                 var statement1 = dbConnection.prepareStatement(sql);
 
@@ -67,7 +67,6 @@ public class Parser {
                         // System.out.println(temp);
                     }
                 }
-                return;
             } catch (Exception e) {
                 System.out.println(e.toString());
                 return;
@@ -75,7 +74,80 @@ public class Parser {
 
             } catch (SQLException e) {
             System.out.println(e.getMessage());
+            return;
         }
-        return;
+        
+        createCourseTable(databaseName);
+    }
+
+    public static void createCourseTable(String databaseName) {
+        String url = "jdbc:sqlite:" + databaseName;
+
+        try(Connection dbConnection = DriverManager.getConnection(url);
+            var statement = dbConnection.createStatement()) {
+            
+            String createSQL = "CREATE TABLE IF NOT EXISTS courses ("
+                + "	course_num INTEGER,"
+                + "	asso_num INTEGER,"
+                + "	clas_nums STRING," //stored as comma seperated class numbers
+                + " PRIMARY KEY (course_num, asso_num)"
+                + ");";
+                
+            statement.execute(createSQL);
+            System.out.println("Created Course DB");
+
+            String groupSQL = "SELECT course_num, asso_num, GROUP_CONCAT(clas_num) AS clas_nums "
+                            + "FROM classes "
+                            + "GROUP BY course_num, asso_num;";
+            var results = statement.executeQuery(groupSQL);
+            String insertSQL = "INSERT OR IGNORE INTO courses(course_num, asso_num, clas_nums) VALUES(?, ?, ?)";
+            var insertStatement = dbConnection.prepareStatement(insertSQL);
+
+            while(results.next()) {
+                insertStatement.setInt(1, results.getInt("course_num"));
+                insertStatement.setInt(2, results.getInt("asso_num"));
+                insertStatement.setString(3, results.getString("clas_nums"));
+                insertStatement.executeUpdate();
+            }
+        }
+        catch (SQLException e) {            
+            System.out.println(e.getMessage());
+        }
+        createInstructorTable(databaseName);
+    }
+
+    public static void createInstructorTable(String databaseName) {
+        String url = "jdbc:sqlite:" + databaseName;
+
+        try(Connection dbConnection = DriverManager.getConnection(url);
+            var statement = dbConnection.createStatement()) {
+            
+            String createSQL = "CREATE TABLE IF NOT EXISTS instructors ("
+                + "	instructor STRING PRIMARY KEY,"
+                + " course_groups STRING" //stored as comma-seperated course_num:asso_num pairs
+                + ");";
+                
+            statement.execute(createSQL);
+            System.out.println("Created Instructor DB");
+
+            String groupSQL = "SELECT s.instructor, "
+                            + " GROUP_CONCAT(co.course_num || ':' || co.asso_num) AS course_groups "
+                            + "FROM classes s "
+                            + "JOIN courses co ON s.course_num = co.course_num AND s.asso_num = co.asso_num "
+                            + "GROUP BY s.instructor;";
+                            
+            var results = statement.executeQuery(groupSQL);
+            String insertSQL = "INSERT OR IGNORE INTO instructors(instructor, course_groups) VALUES(?, ?)";
+            var insertStatement = dbConnection.prepareStatement(insertSQL);
+
+            while(results.next()) {
+                insertStatement.setString(1, results.getString("instructor"));
+                insertStatement.setString(2, results.getString("course_groups"));
+                insertStatement.executeUpdate();
+            }
+        }
+        catch (SQLException e) {            
+            System.out.println(e.getMessage());
+        }
     }
 }
