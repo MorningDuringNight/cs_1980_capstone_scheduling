@@ -64,12 +64,17 @@ final public class rules {
             save1 = endTimeHR - startTimeHR;
             save2 = endTimeMin - startTimeMin;
         }
+        // one AM one PM
         else if (Thruple1.getThird() && !Thruple2.getThird()){
+            save1 = endTimeHR - startTimeHR;
+            save2 = endTimeMin - startTimeMin;
+        }
+        else if (!Thruple1.getThird() && Thruple2.getThird()){
             save1 = endTimeHR - startTimeHR;
             save2 = endTimeMin - startTimeMin;
         }
         return 0;
     }
 
-    // 
+    // make a class that struct that has all the data for 
 }
