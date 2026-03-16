@@ -50,6 +50,7 @@ final public class rules {
 
         return myThruple;
     }
+    //does not support PM to AM conversion please input as AM to PM at worst
     public static int CalculatTimings(Thruple<Integer, Integer, Boolean> Thruple1, Thruple<Integer, Integer, Boolean> Thruple2){
 
         int save1, save2;
@@ -63,17 +64,30 @@ final public class rules {
         if(Thruple1.getThird() && Thruple2.getThird()){
             save1 = endTimeHR - startTimeHR;
             save2 = endTimeMin - startTimeMin;
+            return (save1*100) + save2;
         }
         // one AM one PM
         else if (Thruple1.getThird() && !Thruple2.getThird()){
+            if (Thruple2.getFirst() < 12) {
+                endTimeHR = endTimeHR + 12;
+            }
             save1 = endTimeHR - startTimeHR;
             save2 = endTimeMin - startTimeMin;
+            return (save1*100) + save2;
         }
-        else if (!Thruple1.getThird() && Thruple2.getThird()){
+        //pm to pm
+        else if (!Thruple1.getThird() && !Thruple2.getThird()){
+            if (Thruple2.getFirst() < 12) {
+                endTimeHR = endTimeHR + 12;
+            }
+            if (Thruple1.getFirst() < 12) {
+                startTimeHR = startTimeHR + 12;
+            }
             save1 = endTimeHR - startTimeHR;
             save2 = endTimeMin - startTimeMin;
+            return (save1*100) + save2;
         }
-        return 0;
+        return -3;
     }
 
     // make a class that struct that has all the data for 
