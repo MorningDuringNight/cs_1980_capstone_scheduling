@@ -2,6 +2,8 @@ package capstoneSchedulingApp;
 
 import static org.mockito.ArgumentMatchers.any;
 
+import java.util.ArrayList;
+
 class Thruple<A, B, C> {
 
     private final A first;
@@ -89,11 +91,19 @@ final public class rules {
         }
         return -3;
     }
-    public static int compare(String a , String b ){
+    public static ArrayList<Integer> commaList(String a){
+        ArrayList<Integer> list = new ArrayList<>();
+        String[] savedStrings = a.split(",");
 
-        return 0;
+        //loops the array of string
+        for(int i = 0; i < savedStrings.length; i++){
+            // add to tail
+            list.add(Integer.valueOf(savedStrings[i]));
+        }
+        return list;
     }
     // make a class that struct that has all the data for 
 
     // coarse table helper function take coma semerated string into an array list
+    // conver coma sperated strings 
 }
