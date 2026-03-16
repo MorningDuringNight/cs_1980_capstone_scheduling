@@ -89,6 +89,11 @@ final public class rules {
         }
         return -3;
     }
+    public static int compare(String a , String b ){
 
+        return 0;
+    }
     // make a class that struct that has all the data for 
+
+    // coarse table helper function take coma semerated string into an array list
 }
