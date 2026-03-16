@@ -102,8 +102,17 @@ final public class rules {
         }
         return list;
     }
-    // make a class that struct that has all the data for 
 
-    // coarse table helper function take coma semerated string into an array list
-    // conver coma sperated strings 
+    // make a class that struct that has all the data for 
+    public static ArrayList<Integer> collenList(String a){
+        ArrayList<Integer> list = new ArrayList<>();
+        String[] savedStrings = a.split(":");
+
+        //loops the array of string
+        for(int i = 0; i < savedStrings.length; i++){
+            // add to tail
+            list.add(Integer.valueOf(savedStrings[i]));
+        }
+        return list;
+    }
 }
