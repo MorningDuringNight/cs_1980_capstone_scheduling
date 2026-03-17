@@ -115,4 +115,16 @@ final public class rules {
         }
         return list;
     }
+
+    public static ArrayList<Integer> combinationList(String a){
+        ArrayList<Integer> list = new ArrayList<>();
+        String[] savedStrings = a.split(":|,");
+
+        //loops the array of string
+        for(int i = 0; i < savedStrings.length; i++){
+            // add to tail
+            list.add(Integer.valueOf(savedStrings[i]));
+        }
+        return list;
+    }
 }
