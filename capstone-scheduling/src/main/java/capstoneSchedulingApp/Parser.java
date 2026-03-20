@@ -19,7 +19,11 @@ public class Parser {
             var statement = dbConnection.createStatement()) {
                 System.out.println("Created DB");
 
-                var sql = "CREATE TABLE IF NOT EXISTS classes ("
+                statement.execute("DROP TABLE IF EXISTS classes");
+                statement.execute("DROP TABLE IF EXISTS courses");
+                statement.execute("DROP TABLE IF EXISTS instructors");
+
+                var sql = "CREATE TABLE classes ("
                     + "	id INTEGER PRIMARY KEY,"
                     + "	clas_num INTEGER,"
                     + "	course_num INTEGER,"
@@ -106,7 +110,7 @@ public class Parser {
             }
 
             } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            //System.out.println(e.getMessage());
             return;
         }
         
@@ -119,7 +123,7 @@ public class Parser {
         try(Connection dbConnection = DriverManager.getConnection(url);
             var statement = dbConnection.createStatement()) {
             
-            String createSQL = "CREATE TABLE IF NOT EXISTS courses ("
+            String createSQL = "CREATE TABLE courses ("
                 + "	id INTEGER PRIMARY KEY,"
                 + "	course_num INTEGER,"
                 + "	asso_num INTEGER,"
@@ -156,7 +160,7 @@ public class Parser {
         try(Connection dbConnection = DriverManager.getConnection(url);
             var statement = dbConnection.createStatement()) {
             
-            String createSQL = "CREATE TABLE IF NOT EXISTS instructors ("
+            String createSQL = "CREATE TABLE instructors ("
                 + "	id INTEGER PRIMARY KEY,"
                 + "	instructor STRING,"
                 + " course_groups STRING" //stored as comma-seperated course_num:asso_num pairs
