@@ -1,0 +1,7 @@
+1. Upload CSV
+    - Click "Upload" in the top navigation bar
+    - Open file system and select valid csv or drag and drop a valid csv
+
+2. Parse
+    - Click this after loading a file.
+    - The schedule will display in the main window

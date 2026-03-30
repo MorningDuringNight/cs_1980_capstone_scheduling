@@ -1,0 +1,10 @@
+capstone-scheduling/node_modules/
+capstone-scheduling/frontend/node_modules
+capstone-scheduling/target/
+.vscode/
+.DS_Store
+**/.DS_Store
+**/target/
+capstone-scheduling/frontend/
+**/frontend/
+capstone-scheduling/.dockerignore
