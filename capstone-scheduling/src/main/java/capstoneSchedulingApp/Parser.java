@@ -3,6 +3,8 @@ package capstoneSchedulingApp;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -235,5 +237,28 @@ public class Parser {
         minutesPassedInDay += (60 * 12);
     }
     return minutesPassedInDay;
+    }
+
+    public static String queryParser(String queryTemplate) {
+        String testInput = "SELECT *" 
+                        + " FROM classes"
+                        + " WHERE id != " + "~i"
+                        //Checks that both instances are Lectures of the same Course Number
+                        + " AND type == 'LEC'"
+                        + " AND course_num == " + "~course_num"
+                        //Condition of the class times overlapping at all
+                        + " AND (" + "~A.start_int"  + " <= end_int"
+                        + " AND start_int <= " + "~end_int" + ")"
+                        //Condtion to make sure class shares at least one day of the week
+                        + " AND (day_mon AND " + "~day_mon"
+                        + " OR day_tues AND " + "~day_tues"
+                        + " OR day_wed AND " + "~day_wed"
+                        + " OR day_thurs AND " + "~day_thurs"
+                        + " OR day_fri AND " + "~day_fri" + ")";
+
+        String out = testInput.replaceAll("\\~i", "test");
+        System.out.println(out);
+
+        return "";
     }
 }

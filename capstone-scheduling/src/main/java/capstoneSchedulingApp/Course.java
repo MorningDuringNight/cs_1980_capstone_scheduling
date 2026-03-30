@@ -65,6 +65,75 @@ public class Course {
         this.enroll     = -1;
     }
 
+    public String switchOut(String input)
+    {
+        switch (input) {
+            case "id":
+                return "" + id;
+            case "clas_num":
+                return "" + clas_num;
+            case "course_num":
+                return "" + course_num;
+            case "asso_num":
+                return "" + asso_num;
+            case "days":
+                return days;
+            case "day_mon":
+                return "" + day_mon;
+            case "day_tues":
+                return "" + day_tues;
+            case "day_wed":
+                return "" + day_wed;
+            case "day_thurs":
+                return "" + day_thurs;
+            case "day_fri":
+                return "" + day_fri;
+            case "start":
+                return start;
+            case "end":
+                return end;
+            case "start_int":
+                return "" + start_int;
+            case "end_int":
+                return "" + end_int;
+            case "room":
+                return room;
+            case "instructor":
+                return instructor;
+            case "type":
+                return type;
+            case "enroll":
+                return "" + enroll;
+            default:
+                return "";
+        }
+    }
+
+    public String queryGen(String inputQuery) {
+        String outString = inputQuery;
+        
+        outString = outString.replaceAll("\\~id",           switchOut("id"));
+        outString = outString.replaceAll("\\~clas_num",     switchOut("clas_num"));
+        outString = outString.replaceAll("\\~course_num",   switchOut("course_num"));
+        outString = outString.replaceAll("\\~asso_num",     switchOut("asso_num"));
+        outString = outString.replaceAll("\\~days",         switchOut("days"));
+        outString = outString.replaceAll("\\~day_mon",      switchOut("day_mon"));
+        outString = outString.replaceAll("\\~day_tues",     switchOut("day_tues"));
+        outString = outString.replaceAll("\\~day_wed",      switchOut("day_wed"));
+        outString = outString.replaceAll("\\~day_thurs",    switchOut("day_thurs"));
+        outString = outString.replaceAll("\\~day_fri",      switchOut("day_fri"));
+        outString = outString.replaceAll("\\~start_int",    switchOut("start_int"));
+        outString = outString.replaceAll("\\~end_int",      switchOut("end_int"));
+        outString = outString.replaceAll("\\~start",        switchOut("start"));
+        outString = outString.replaceAll("\\~end",          switchOut("end"));
+        outString = outString.replaceAll("\\~room",         switchOut("room"));
+        outString = outString.replaceAll("\\~instructor",   switchOut("instructor"));
+        outString = outString.replaceAll("\\~type",         switchOut("type"));
+        outString = outString.replaceAll("\\~enroll",       switchOut("enroll"));
+
+        return outString;        
+    }
+
     public String toString() {
         return clas_num + " " + days + " " + start + "-" + end + " " + instructor;
     }
