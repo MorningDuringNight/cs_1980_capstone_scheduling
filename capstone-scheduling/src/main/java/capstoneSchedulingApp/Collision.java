@@ -21,6 +21,7 @@ public class Collision {
         this.impact = impact;
     }
 
+    @Override
     public String toString() {
         String outString = "";
         outString += "---------------------------------------------\n";
@@ -31,5 +32,9 @@ public class Collision {
         }
         outString += "---------------------------------------------\n";
         return outString;
+    }
+
+    public String getTypeSafe(){
+        return type == null ? "" : type;
     }
 }
