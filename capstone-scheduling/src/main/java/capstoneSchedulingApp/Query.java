@@ -45,7 +45,7 @@ public class Query {
         return queryOutput;
     }
 
-    public static void queryRecCollision(String databaseName, int minutesBetweenAmount) {
+    public static ArrayList<Collision> queryRecCollision(String databaseName, int minutesBetweenAmount) {
         //Loops through each class in classes
         String firstSql = "SELECT *" 
                         + " FROM classes" 
