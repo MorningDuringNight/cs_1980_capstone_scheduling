@@ -318,21 +318,21 @@ public class Query {
 
                 sql =         "SELECT *" 
                             + " FROM classes"
-                            + " WHERE id != " + i
+                            + " WHERE id != " + "~i"
                             //Checks that both instances are Lectures of the same Course Number
-                            + " AND instructor == '" + A.instructor + "'"
+                            + " AND instructor == '" + "~instructor" + "'"
                             //Condition of the class times overlapping at all
                             // + " AND (" + A.start_int  + " <= end_int"
                             // + " AND start_int <= " + A.end_int + ")"
                             //check for class and associated from original to cross List
-                            + " AND clas_num == "  + (A.clas_num+1)
-                            + " AND " + A.asso_num  + " == asso_num"
+                            + " AND clas_num == "  + ("~clas_num+1")
+                            + " AND " + "~asso_num"  + " == asso_num"
                             //Condtion to make sure class shares at least one day of the week
-                            + " AND (day_mon AND " + A.day_mon
-                            + " OR day_tues AND " + A.day_tues
-                            + " OR day_wed AND " + A.day_wed
-                            + " OR day_thurs AND " + A.day_thurs
-                            + " OR day_fri AND "+ A.day_fri + ")";
+                            + " AND (day_mon AND " + "~day_mon"
+                            + " OR day_tues AND " + "~A.day_tues"
+                            + " OR day_wed AND " + "~day_wed"
+                            + " OR day_thurs AND " + "~day_thurs"
+                            + " OR day_fri AND "+ "~day_fri" + ")";
 
                 try (Connection dbConnection = DriverManager.getConnection(url);
                 var statement = dbConnection.prepareStatement(sql)) {
@@ -364,7 +364,7 @@ public class Query {
         for (int i = 1; i <= tableLength(databaseName, "classes"); i++) {
             String sql = "SELECT * "
                                 + "FROM classes "
-                                + "WHERE id == " + i;
+                                + "WHERE id == " + "~i";
 
             Course A = new Course();
             ArrayList<Course> B = new ArrayList<Course>();
@@ -386,20 +386,20 @@ public class Query {
                 + " FROM classes"
                 + " WHERE id != " + i
                 // Same room
-                + " AND room == '" + A.room + "'"
+                + " AND room == '" + "~room" + "'"
                 // Overlapping times
-                + " AND (" + A.start_int + " <= end_int"
-                + " AND start_int <= " + A.end_int + ")"
+                + " AND (" + "~start_int" + " <= end_int"
+                + " AND start_int <= " + "~end_int" + ")"
                 // Same day
-                + " AND (day_mon AND " + A.day_mon
-                + " OR day_tues AND " + A.day_tues
-                + " OR day_wed AND " + A.day_wed
-                + " OR day_thurs AND " + A.day_thurs
-                + " OR day_fri AND " + A.day_fri + ")"
+                + " AND (day_mon AND " + "~day_mon"
+                + " OR day_tues AND " + "~day_tues"
+                + " OR day_wed AND " + "~day_wed"
+                + " OR day_thurs AND " + "~day_thurs"
+                + " OR day_fri AND " + "~day_fri" + ")"
                 // Not a cross listed course (clas_num not off by 1 with same asso_num)
-                + " AND NOT (asso_num == " + A.asso_num
-                + " AND (clas_num == " + (A.clas_num + 1)
-                + " OR clas_num == " + (A.clas_num - 1) + "))";
+                + " AND NOT (asso_num == " + "~asso_num"
+                + " AND (clas_num == " + "(" + "~clas_num" + " + 1)"
+                + " OR clas_num == " + "(~clas_num - 1)" + "))";
 
             try (Connection dbConnection = DriverManager.getConnection(url);
                 var statement = dbConnection.prepareStatement(sql)) {
@@ -454,7 +454,7 @@ public class Query {
             for (int i = 1; i <= tableLength(databaseName, "classes"); i++) {
                 sql     =     "SELECT *" 
                             + " FROM classes" 
-                            + " WHERE id == " + i
+                            + " WHERE id == " + "~i"
                             + " AND instructor == '" + inst +"'";
 
                 Course A = new Course();
@@ -481,18 +481,18 @@ public class Query {
 
                 sql =         "SELECT *" 
                             + " FROM classes"
-                            + " WHERE id != " + i
+                            + " WHERE id != " + "~i"
                             //Checks that both instances are Lectures of the same Course Number
-                            + " AND instructor == '" + A.instructor + "'"
+                            + " AND instructor == '" + "~instructor" + "'"
                             //Condition within
-                            + " AND (" + A.start_int + " - end_int < 30"
-                            + " AND " + A.start_int + " - end_int > 0)"
+                            + " AND (" + "~start_int" + " - end_int < 30"
+                            + " AND " + "~start_int" + " - end_int > 0)"
                             //Condtion to make sure class shares at least one day of the week
-                            + " AND (day_mon AND " + A.day_mon
-                            + " OR day_tues AND " + A.day_tues
-                            + " OR day_wed AND " + A.day_wed
-                            + " OR day_thurs AND " + A.day_thurs
-                            + " OR day_fri AND "+ A.day_fri + ")";
+                            + " AND (day_mon AND " + "~day_mon"
+                            + " OR day_tues AND " + "~day_tues"
+                            + " OR day_wed AND " + "~day_wed"
+                            + " OR day_thurs AND " + "~day_thurs"
+                            + " OR day_fri AND "+ "~day_fri" + ")";
 
                 try (Connection dbConnection = DriverManager.getConnection(url);
                 var statement = dbConnection.prepareStatement(sql)) {
