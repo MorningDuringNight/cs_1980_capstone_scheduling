@@ -1,10 +1,12 @@
+/*
+    Author: Nico Bartello
+    Date: 4/8/26
+    Description: The vaadin implementation for the frontend view webpage
+*/
 package capstoneSchedulingApp.UI;
-
-import capstoneSchedulingApp.Parser;
-import capstoneSchedulingApp.Query;
-import capstoneSchedulingApp.Collision;
-import capstoneSchedulingApp.Course;
+import capstoneSchedulingApp.*;
 import java.util.ArrayList;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.html.H1;
@@ -12,7 +14,6 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Pre;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -27,11 +28,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.component.tabs.*;
-
-import java.io.File;
 import java.io.InputStream;
-
 import com.nimbusds.jose.util.StandardCharset;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -297,28 +294,7 @@ public class MainView extends AppLayout{
             + "\nInstructor: " + c.instructor;
     }
 
-    private String formatHitsDetailed(Collision collision){
-        StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < collision.hits.size(); i++){
-            Course c = collision.hits.get(i);
-            sb.append("Conflict ").append(i+1).append("\n");
-            sb.append(formatCourseDetailed(c));
-            if(i < collision.hits.size() - 1)
-                sb.append("\n\n");
-        }
-        return sb.toString();
-    }
-    private static class CourseRow{
-        private final String label;
-        private final Course course;
-        public CourseRow(String label, Course course){
-            this.label = label;
-            this.course = course;
-        }
-        public String getLabel(){
-            return label;
-        }
-    }
+
     private HorizontalLayout buildDetailHeaderRow() {
         HorizontalLayout row = new HorizontalLayout();
         row.setWidthFull();
