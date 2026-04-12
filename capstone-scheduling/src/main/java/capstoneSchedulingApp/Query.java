@@ -358,6 +358,40 @@ public class Query {
         }
     }
 
+    public static ArrayList<Collision> crossProf(String databaseName) {
+        String firstSql = "SELECT *"
+                        + " FROM classes"
+                        + " WHERE id == " + "~i"
+                        + " AND type == 'LEC' ";
+
+        final int RULES = 1;
+        String secondSql[]       = new String[RULES];
+        String typeStringsArray[] = new String[RULES];
+        int impactArray[]         = new int[RULES];
+
+        typeStringsArray[0] = "CROSS-LISTED INSTRUCTOR MISMATCH";
+        impactArray[0] = 2;
+        secondSql[0] = "SELECT *"
+                    + " FROM classes"
+                    + " WHERE id != " + "~i"
+                    + " AND type == 'LEC'"
+                    // Cross-listed partner: same asso_num, clas_num offset by ±1
+                    + " AND asso_num == " + "~asso_num"
+                    + " AND (clas_num == (" + "~clas_num" + " + 1)"
+                    + " OR clas_num == (" + "~clas_num" + " - 1))"
+                    // Instructor differs from base course and is not empty
+                    + " AND instructor != '" + "~instructor" + "'"
+                    + " AND instructor != ''";
+
+
+        ArrayList<Collision> queryOutput = queryEachInCourse(databaseName, firstSql, secondSql, typeStringsArray, impactArray);
+        System.out.println("Output: ");
+        for (Collision e : queryOutput) {
+            System.out.println(e.toString());
+        }
+        return queryOutput;
+    }
+
     public static void queryRoomCollision(String databaseName) {
         String url = "jdbc:sqlite:" + databaseName;
 
