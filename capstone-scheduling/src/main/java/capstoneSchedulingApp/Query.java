@@ -396,7 +396,7 @@ public class Query {
                             + " AND " + "~asso_num"  + " == asso_num"
                             //Condtion to make sure class shares at least one day of the week
                             + " AND (day_mon AND " + "~day_mon"
-                            + " OR day_tues AND " + "~A.day_tues"
+                            + " OR day_tues AND " + "~day_tues"
                             + " OR day_wed AND " + "~day_wed"
                             + " OR day_thurs AND " + "~day_thurs"
                             + " OR day_fri AND "+ "~day_fri" + ")";
