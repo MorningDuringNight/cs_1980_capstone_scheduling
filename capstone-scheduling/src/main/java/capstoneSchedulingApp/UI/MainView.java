@@ -42,6 +42,9 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 @PageTitle("Schedule Validation")
 public class MainView extends AppLayout{
 
+    private int sizesLecCollision = 0;
+    private int sizesRecCollision = 0;
+    private int sizesProx = 0;
     private VerticalLayout contentArea = new VerticalLayout();
     private String dbPath = System.getenv().getOrDefault("SQLITE_DB_PATH", "tmpData/schedule.db");
 
@@ -95,6 +98,11 @@ public class MainView extends AppLayout{
                 String currentUploadedFileName = buffer.getFileName();
                 Parser.parseFile(dbPath, buffer.getFileData().getFile().getAbsolutePath(), ",");
                 ArrayList<Collision> collisions = new ArrayList<>();
+                //grabbing the sizes
+                sizesLecCollision = Query.queryLecCollision(dbPath).size();
+                sizesRecCollision = Query.queryRecCollision(dbPath, 30).size();
+                sizesProx = Query.queryTeacherProximity(dbPath, 30).size();
+                //getting the stuff
                 collisions.addAll(Query.queryLecCollision(dbPath));
                 collisions.addAll(Query.queryRecCollision(dbPath, 30));
                 collisions.addAll(Query.queryTeacherProximity(dbPath, 30));
@@ -217,7 +225,22 @@ public class MainView extends AppLayout{
             table.add(buildDetailDataRow("Base Class", collision.base, true));
 
             for (int i = 0; i < collision.hits.size(); i++) {
-                table.add(buildDetailDataRow("Conflicting Class", collision.hits.get(i), false));
+                if(i < sizesLecCollision){
+                    // print the table with the text 
+                    // system.out.println("lecture collision");
+                    table.add(buildDetailDataRow("Conflicting Class/ lecture collision", collision.hits.get(i), false));
+                }
+                else if(i < sizesRecCollision){
+                    // print the table with the text 
+                    // system.out.println("recitation collision");
+                    table.add(buildDetailDataRow("Conflicting Class/ recitation collision", collision.hits.get(i), false));
+                }
+                else if(i < sizesProx ){
+                    // print the table with the text 
+                    // system.out.println("proximity collision");
+                    table.add(buildDetailDataRow("Conflicting Class/ proximity too close", collision.hits.get(i), false));
+                }
+                // table.add(buildDetailDataRow("Conflicting Class", collision.hits.get(i), false));
             }
 
             detailsWrapper.add(table);
