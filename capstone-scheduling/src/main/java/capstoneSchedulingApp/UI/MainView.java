@@ -6,6 +6,12 @@
 package capstoneSchedulingApp.UI;
 import capstoneSchedulingApp.*;
 import java.util.ArrayList;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+
+import java.io.IOException;
+import java.util.Comparator;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -35,24 +41,44 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 
 
 
-
 @Route("/")
 @RouteAlias("main")
 @RouteAlias("home")
 @PageTitle("Schedule Validation")
 public class MainView extends AppLayout{
 
-    private int sizesLecCollision = 0;
-    private int sizesRecCollision = 0;
-    private int sizesProx = 0;
-    private VerticalLayout contentArea = new VerticalLayout();
-    private String dbPath = System.getenv().getOrDefault("SQLITE_DB_PATH", "tmpData/schedule.db");
+    private final VerticalLayout contentArea = new VerticalLayout();
+    private Path tmpDbDir; //= System.getenv().getOrDefault("SQLITE_DB_PATH", "tmpData/schedule.db");
+    private String dbPath;
+    private ArrayList<String> parsingErrors = new ArrayList<>();
+
 
     public MainView(){
-
+        initializeTempDb();
         contentArea.setSizeFull();
         setContent(contentArea);
         addToNavbar(createHeader());
+    }
+
+    private void initializeTempDb(){
+        try {
+            Path systemTemp = Path.of(System.getProperty("java.io.tmpdir"));
+            tmpDbDir = Files.createTempDirectory(systemTemp, ".schedule-validator-");
+            Path dbFile = tmpDbDir.resolve("schedule.db");
+            dbPath = dbFile.toString();
+            tmpDbDir.toFile().deleteOnExit();
+            dbFile.toFile().deleteOnExit();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create temporary database directory", e);
+        }
+    }
+
+    private void resetTempDb(){
+        try {
+            Files.deleteIfExists(Path.of(dbPath));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to reset database");
+        }
     }
 
     private Component createHeader(){
@@ -96,16 +122,15 @@ public class MainView extends AppLayout{
         upload.addSucceededListener(event -> {
             try {
                 String currentUploadedFileName = buffer.getFileName();
-                Parser.parseFile(dbPath, buffer.getFileData().getFile().getAbsolutePath(), ",");
+                resetTempDb();
+                parsingErrors = Parser.parseFile(dbPath, buffer.getFileData().getFile().getAbsolutePath(), ",");
                 ArrayList<Collision> collisions = new ArrayList<>();
-                //grabbing the sizes
-                sizesLecCollision = Query.queryLecCollision(dbPath).size();
-                sizesRecCollision = Query.queryRecCollision(dbPath, 30).size();
-                sizesProx = Query.queryTeacherProximity(dbPath, 30).size();
+
                 //getting the stuff
                 collisions.addAll(Query.queryLecCollision(dbPath));
                 collisions.addAll(Query.queryRecCollision(dbPath, 30));
                 collisions.addAll(Query.queryTeacherProximity(dbPath, 30));
+                removeDuplicateCollisions(collisions);
                 renderResults(currentUploadedFileName, collisions);
                 Notification notification = Notification.show("Upload and validation completed", 3000, Notification.Position.TOP_END);
                 notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
@@ -127,7 +152,45 @@ public class MainView extends AppLayout{
         dialog.add(dialogLayout);
         dialog.getFooter().add(cancel);
         dialog.open();
-        }        
+        }      
+        
+    private void removeDuplicateCollisions(ArrayList<Collision> collisions){
+        for(int i = 0; i < collisions.size(); i++){
+            Collision a = collisions.get(i);
+            for(int j = i + 1; j < collisions.size(); j++){
+                Collision b = collisions.get(j);
+                if(areSameCollision(a, b)){
+                    collisions.remove(j);
+                    j--;
+                }
+            }
+        }
+    }
+
+    private boolean areSameCollision(Collision a, Collision b){
+        if(a == null || b == null || a.base == null || b.base == null)
+            return false;
+        if(!safe(a.getTypeSafe()).equals(safe(b.getTypeSafe())))
+            return false;
+        if(a.hits == null || b.hits == null || a.hits.size()!=1 || b.hits.size()!=1)
+            return false;
+        Course aHit = a.hits.get(0);
+        Course bHit = b.hits.get(0);
+        return (sameCourse(a.base, b.base) && sameCourse(aHit, bHit)) || (sameCourse(a.base, bHit) && sameCourse(aHit, b.base));
+    }
+
+    private boolean sameCourse(Course a, Course b){
+        if(a == null || b == null)
+            return false;
+        return a.clas_num == b.clas_num
+            && a.course_num == b.course_num
+            && safe(a.type).equals(safe(b.type))
+            && safe(a.days).equals(safe(b.days))
+            && safe(a.start).equals(safe(b.start))
+            && safe(a.end).equals(safe(b.end))
+            && safe(a.room).equals(safe(b.room))
+            && safe(a.instructor).equals(safe(b.instructor));
+    }
     
     private void HelpDialog(){
         Dialog dialog = new Dialog();
@@ -153,6 +216,8 @@ public class MainView extends AppLayout{
         dialog.open();
     }
 
+
+
     private void renderResults(String fileName, ArrayList<Collision> collisions){
         contentArea.removeAll();
         H3 title = new H3("Validation Results");
@@ -165,7 +230,15 @@ public class MainView extends AppLayout{
         totalIssues.getStyle().set("font-weight", "700");
         Paragraph uploadedFile = new Paragraph("File: " + fileName);
         uploadedFile.getStyle().set("margin", "0").set("font-size", "0.95rem").set("color", "var(--lumo-secondary-text-color)").set("font-weight", "700");
-        topBar.add(totalIssues, uploadedFile);
+        HorizontalLayout rightSide = new HorizontalLayout();
+        rightSide.setSpacing(true);
+        rightSide.setAlignItems(FlexComponent.Alignment.CENTER);
+        rightSide.add(uploadedFile);
+        if(!parsingErrors.isEmpty()){
+            Button parsingErrorsButton = new Button("Parsing Errors (" + parsingErrors.size() + ")", event -> openParsingErrorsDialog());
+            rightSide.add(parsingErrorsButton);
+        }
+        topBar.add(totalIssues, rightSide);
         contentArea.add(title, topBar);
         if(collisions.isEmpty()){
             contentArea.add(new Paragraph("No rule violations were found."));
@@ -176,7 +249,7 @@ public class MainView extends AppLayout{
         grid.setWidthFull();
         grid.setAllRowsVisible(true);
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
-        grid.addColumn(Collision::getTypeSafe).setHeader("Rule").setAutoWidth(true).setFlexGrow(0);
+        grid.addColumn(collision -> getRuleDisplayName(collision.getTypeSafe())).setHeader("Rule").setAutoWidth(true).setFlexGrow(0);
         grid.addComponentColumn(collision -> {
             Span badge = new Span("Impact " + collision.impact);
             badge.getStyle().set("padding", "0.25rem 0.6rem").set("border-radius", "999px").set("font-weight", "600").set("font-size", "0.85rem").set("color", "white");
@@ -225,24 +298,11 @@ public class MainView extends AppLayout{
             table.add(buildDetailDataRow("Base Class", collision.base, true));
 
             for (int i = 0; i < collision.hits.size(); i++) {
-                if(i < sizesLecCollision){
-                    // print the table with the text 
-                    // system.out.println("lecture collision");
-                    table.add(buildDetailDataRow("Conflicting Class/ lecture collision", collision.hits.get(i), false));
-                }
-                else if(i < sizesRecCollision){
-                    // print the table with the text 
-                    // system.out.println("recitation collision");
-                    table.add(buildDetailDataRow("Conflicting Class/ recitation collision", collision.hits.get(i), false));
-                }
-                else if(i < sizesProx ){
-                    // print the table with the text 
-                    // system.out.println("proximity collision");
-                    table.add(buildDetailDataRow("Conflicting Class/ proximity too close", collision.hits.get(i), false));
-                }
-                // table.add(buildDetailDataRow("Conflicting Class", collision.hits.get(i), false));
+                table.add(buildDetailDataRow("Conflicting Class", collision.hits.get(i), false));
             }
-
+            Paragraph issueText = new Paragraph(getRuleDisplayName(collision.getTypeSafe()) + ": " + getRuleIssueDescription(collision.getTypeSafe()));
+            issueText.getStyle().set("margin", "0 0 0.5rem 0").set("font-weight", "600").set("color", "var(--lumo-secondary-text-color)");
+            detailsWrapper.add(issueText);
             detailsWrapper.add(table);
             return detailsWrapper;
         }));
@@ -305,16 +365,6 @@ public class MainView extends AppLayout{
                 sb.append(" || ");
         }
         return sb.toString();
-    }
-    private String formatCourseDetailed(Course c){
-        return "Class Number: " + c.clas_num
-            + "\nCourse Number: " + c.course_num
-            + "\nType: " + c.type 
-            + "\nDays: " + c.days
-            + "\nStart Time: " + c.start
-            + "\nEnd Time: " + c.end
-            + "\nRoom: " + c.room
-            + "\nInstructor: " + c.instructor;
     }
 
 
@@ -386,6 +436,92 @@ public class MainView extends AppLayout{
         return cell;
     }
 
+    private void openParsingErrorsDialog(){
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Parsing Errors");
+        Button closeButton = new Button("Close", event -> dialog.close());
+        dialog.getFooter().add(closeButton);
+        VerticalLayout layout = new VerticalLayout();
+        layout.setPadding(false);
+        layout.setSpacing(true);
+        layout.setWidth("100%");
+        Paragraph summary = new Paragraph("These rows were skipped because they were missing required data or contained invalid values needed for validation");
+        summary.getStyle().set("margin", "0");
+        VerticalLayout errorsList = new VerticalLayout();
+        errorsList.setPadding(false);
+        errorsList.setSpacing(true);
+        errorsList.setWidthFull();
+        for(String error: parsingErrors)
+            errorsList.add(buildParsingErrorsDisplay(error));
+        layout.add(summary, errorsList);
+        dialog.add(layout);
+        dialog.setWidth("800px");
+        dialog.setHeight("500px");
+        dialog.open();
+    }
+
+    private Div buildParsingErrorsDisplay(String rawError){
+        Div block = new Div();
+        block.getStyle().set("border", "1px solid var(--lumo-contrast-10pct)").set("border-radius", "8px").set("padding", "0.75rem").set("background", "var(--lumo-base-color)").set("white-space", "normal");
+        String [] lines = rawError.split("\\n");
+        String row = "";
+        String data = "";
+        StringBuilder problem = new StringBuilder();
+        for (String line : lines){
+            if(line.startsWith("Row:"))
+                row = line.substring("Row:".length()).trim();
+            else if(line.startsWith("Data:"))
+                data = formatParsingData(line.substring("Data:".length()).trim());
+            else if(line.startsWith("Problem(s):")){
+                String text = line.substring("Problem(s):".length()).trim();
+                if(!text.isEmpty()){
+                    if(problem.length() > 0)
+                        problem.append("<br>");
+                    problem.append(escapeHtml(text));
+                }
+            }
+            else if(line.startsWith("Problem:")){
+                String text = line.substring("Problem:".length()).trim();
+                if(!text.isEmpty()){
+                    if(problem.length() > 0)
+                        problem.append("<br>");
+                    problem.append(escapeHtml(text));
+                }
+            }
+            else if(!line.trim().isEmpty()){
+                if(problem.length()>0)
+                    problem.append("<br>");
+                problem.append(escapeHtml(line.trim()));
+            }
+        }
+        String problemLabel = problem.toString().contains("<br>") ? "Problems:" : "Problem:";
+        block.getElement().setProperty("innerHTML", "<b>Row:</b> " + escapeHtml(row) + "<br>" + "<b>Data:</b> " + escapeHtml(data) + "<br>" + "<b>" + problemLabel + "</b> " + problem.toString());
+        return block;
+    }
+
+    
+
+    private String escapeHtml(String text){
+        if(text==null)
+            return "";
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
+    private String formatParsingData(String rawData){
+        String [] parts = rawData.split(",", -1);
+        int lastNonEmpty = parts.length-1;
+        while(lastNonEmpty>=0 && parts[lastNonEmpty].trim().equals(""))
+            lastNonEmpty--;
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i<=lastNonEmpty; i++){
+            String value = parts[i].trim();
+            if(i>0)
+                sb.append(", ");
+            sb.append(value.isEmpty() ? "null" : value);
+        }
+        return sb.toString();
+    }
+
     private Div detailCell(String text, String width) {
         Div cell = new Div();
         cell.setText(text);
@@ -406,6 +542,32 @@ public class MainView extends AppLayout{
 
     private String safe(String value) {
         return value == null ? "" : value;
+    }
+
+    private String getRuleDisplayName(String ruleType){
+        switch(safe(ruleType)){
+            case "OVERLAP CHECK":
+                return "Overlap Check";
+            case "TIME BETWEEN CHECK":
+                return "Time Between Check";
+            case "PROXIMITY CHECK":
+                return "Instructor Proximity Check";
+            default:
+                return safe(ruleType);
+        }
+    }
+
+    private String getRuleIssueDescription(String ruleType){
+        switch(safe(ruleType)){
+            case "OVERLAP CHECK":
+                return "These classes meet at overlapping times on at least one shared day.";
+            case "TIME BETWEEN CHECK":
+                return "These classes do not leave enough time between meetings.";
+            case "PROXIMITY CHECK":
+                return "These instructor assignments are too close together to allow reasonable travel and preparation time.";
+            default:
+                return "This entry violates the stated rule.";
+        }
     }
 }
 

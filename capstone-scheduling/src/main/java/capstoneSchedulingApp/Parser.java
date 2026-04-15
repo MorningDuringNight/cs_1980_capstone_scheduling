@@ -13,7 +13,7 @@ public class Parser {
     public static ArrayList<String> parseFile(String databaseName, String fileName, String delin) {
         // Schedule sched = new Schedule(5, 480, 1200, 5);
         String url = "jdbc:sqlite:" + databaseName;
-        ArrayList<String> output = new ArrayList<String>();
+        ArrayList<String> output = new ArrayList<>();
 
         try (Connection dbConnection = DriverManager.getConnection(url);
             var statement = dbConnection.createStatement()) {
@@ -95,14 +95,14 @@ public class Parser {
 
                     //Line entry number check
                     if (lineArray.length != 16) {
-                        output.add(lineNum + ": " + currentLine + "\nMissing information\n");
+                        output.add("Row: " + lineNum + "\nData: " + currentLine + "\nProblem: Missing information\n");
                         continue;
                     }
 
                     //Invalid Input Check
                     String invalidInput = nullInputCheck(lineArray);
-                    if (invalidInput != "") {
-                        output.add(lineNum + ": " + currentLine + "\n" + invalidInput);
+                    if (!invalidInput.equals("")) {
+                        output.add("Row: " + lineNum + "\nData: " + currentLine + "\nProblem(s):\n" + invalidInput);
                         continue;
                     }
 
