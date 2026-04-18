@@ -401,7 +401,7 @@ public class Query {
         for (Collision e : filtered) {
             System.out.println(e.toString());
         }
-        return queryOutput;
+        return filtered;
     }
 
     public static ArrayList<Collision> queryRoomCollision(String databaseName) {
