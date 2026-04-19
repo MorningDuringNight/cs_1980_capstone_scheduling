@@ -342,7 +342,6 @@ public class Query {
                     + " FROM classes "
                     + " WHERE id > " + "~i"
                     + " AND type == '~type'"
-                    + " AND asso_num == " + "~asso_num"
                     + " AND " + CROSS_LISTED_EXISTS
                     + " AND room != '~room'"
                     + " AND TRIM(room) != 'TBA'"
@@ -376,7 +375,6 @@ public class Query {
                     + " FROM classes"
                     + " WHERE id > " + "~i"
                     + " AND type == '~type'"
-                    // Cross-listed partner: same asso_num, clas_num offset by ±1
                     + " AND " + CROSS_LISTED_EXISTS
                     // Instructor differs from base course and is not empty
                     + " AND TRIM(instructor) != ''"
@@ -403,6 +401,40 @@ public class Query {
         }
         return filtered;
     }
+
+    public static ArrayList<Collision> queryCrossTime(String databaseName) {
+        String firstSql = "SELECT * "
+                        + " FROM classes "
+                        + " WHERE id == " + "~i";
+        
+        final int RULES = 1;
+        String secondSql[] = new String[RULES];
+        String typeStringsArray[] = new String[RULES];
+        int impactArray[] = new int[RULES];
+
+        typeStringsArray[0] = "CROSS-LISTED Classes Have Different Times";
+        impactArray[0] = 2;
+        secondSql[0] = "SELECT * "
+                    + " FROM classes "
+                    + " WHERE id > " + "~i"
+                    + " AND type == '~type'"
+                    + " AND " + CROSS_LISTED_EXISTS
+                    + " AND NOT (" + "~start_int"  + " < end_int"
+                    + " AND start_int < " + "~end_int" + ")"
+                    + " AND  (day_mon AND " + "~day_mon"
+                    + " OR day_tues AND " + "~day_tues"
+                    + " OR day_wed AND " + "~day_wed"
+                    + " OR day_thurs AND " + "~day_thurs"
+                    + " OR day_fri AND "+ "~day_fri" + ")";
+
+        ArrayList<Collision> queryOutput = queryEachInCourse(databaseName, firstSql, secondSql, typeStringsArray, impactArray);
+        for (Collision e : queryOutput) {
+            System.out.println(e.toString());
+        }
+
+        return queryOutput;
+    }
+
 
     public static ArrayList<Collision> queryRoomCollision(String databaseName) {
         String firstSql = "SELECT * "
