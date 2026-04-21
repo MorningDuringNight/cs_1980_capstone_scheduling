@@ -50,23 +50,23 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           mkdir -p packaging/input
-          cp target/*.jar packaging/input/
+          cp target/capstone-scheduling-V1.0.jar packaging/input/
       
       - name: Preparing packaging folder (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path packaging/input
-          Copy-Item target/*.jar packaging/input/
+          Copy-Item target/capstone-scheduling-V1.0.jar packaging/input/
       
       - name: Run jpackage (macOS/linux)
         if: runner.os != 'Windows'
         run: |
-          jpackage \ 
-            --type "${{ matrix.package_type }}" \ 
+          jpackage \
+            --type "${{ matrix.package_type }}" \
             --name "Capstone Schedule Validator" \
             --input packaging/input \
-            --main-jar "$(basename target/*.jar)" \ 
+            --main-jar "$(basename target/*.jar)" \
             --icon "${{ matrix.icon_path }}" \
             --dest dist
         
