@@ -6,6 +6,7 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
+import javafx.scene.image.Image;
 
 public class DesktopLauncher extends Application {
 
@@ -22,6 +23,8 @@ public class DesktopLauncher extends Application {
 
     @Override
     public void start(Stage stage) {
+        stage.getIcons().add(
+            new Image(getClass().getResourceAsStream("/icon.png")));
         WebView webView = new WebView();
         
         webView.getEngine().setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " + "AppleWebKit/605.1.15 (KHTML, like Gecko) " + "Version/17.0 Safari/605.1.15");
