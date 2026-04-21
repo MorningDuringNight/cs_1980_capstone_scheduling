@@ -11,6 +11,10 @@ jobs:
     name: Build on ${{ matrix.os }}
     runs-on:  ${{ matrix.os }}
 
+    defaults:
+      run:
+        working-directory: capstone-scheduling
+
     strategy:
       fail-fast: false
       matrix:
