@@ -1,22 +1,35 @@
-Let’s create a sample package for an application JAR. As mentioned in the above section, the application JAR should be pre-built, and it will be used as an input to the jpackage tool.
+Packaging Instructions
 
-For example, we can use the following command to create a package:
+This application can be packaged into a native installer using `jpackage`. The application JAR must be built before packaging, since `jpackage` uses the compiled JAR as input.
+
+Build the project first:
+
+mvn clean package (must be in capstone-scheduling directory)
+
+After the build completes, run `jpackage` from the project root. Example:
 
 jpackage --input target/ \
-  --name JPackageDemoApp \
-  --main-jar JPackageDemoApp.jar \
-  --main-class com.baeldung.java14.jpackagedemoapp.JPackageDemoApp \
-  --type dmg \
-  --java-options '--enable-preview'
-Copy
-Let’s go through each of the options used:
+  --name CapstoneScheduling \
+  --main-jar capstone-scheduling-1.0-SNAPSHOT.jar \
+  --main-class capstoneSchedulingApp.App \
+  --type dmg
 
-–input: location of the input jar files(s)
-–name: give a name to the installable package
-–main-jar: JAR file to launch at the start of the application
-–main-class: main class name in the JAR to launch at the start of the application. This is optional if the MANIFEST.MF file in the main JAR contains the main class name.
-–type: what kind of the installer do we want to create? This depends on the base OS on which we’re running the jpackage command. On macOS, we can pass package type as DMG or PKG. The tool supports MSI and EXE options on Windows and DEB and RPM options on Linux.
-–java-options: options to pass to the Java runtime
-The above command will create the JPackageDemoApp.dmg file for us.
+Arguments:
 
-We can then use this file to install the application on the macOS platform. After the installation, we’d be able to use the application just like any other software.
+--input: directory containing the built JAR  
+--name: name of the packaged application  
+--main-jar: JAR file to launch  
+--main-class: application entry point  
+--type: installer format for the current operating system  
+
+Supported package types depend on the OS:
+- macOS: dmg, pkg
+- Windows: exe, msi
+- Linux: deb, rpm
+
+Examples:
+- macOS: use `--type dmg`
+- Windows: use `--type exe`
+- Ubuntu/Linux: use `--type deb`
+
+The generated installer can then be distributed and installed like a normal desktop application.
