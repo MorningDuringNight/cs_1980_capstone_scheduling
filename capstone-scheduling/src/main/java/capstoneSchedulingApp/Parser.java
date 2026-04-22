@@ -11,7 +11,6 @@ import java.sql.SQLException;
 public class Parser {
 
     public static ArrayList<String> parseFile(String databaseName, String fileName, String delin) {
-        // Schedule sched = new Schedule(5, 480, 1200, 5);
         String url = "jdbc:sqlite:" + databaseName;
         ArrayList<String> output = new ArrayList<>();
 
@@ -93,16 +92,16 @@ public class Parser {
                         }
                     }
 
-                    //Line entry number check
+                    /*Line entry number check
                     if (lineArray.length != 16) {
                         output.add("Row: " + lineNum + "\nData: " + currentLine + "\nProblem: Missing information\n");
                         continue;
-                    }
+                    }*/
 
                     //Invalid Input Check
-                    String invalidInput = nullInputCheck(lineArray);
-                    if (!invalidInput.equals("")) {
-                        output.add("Row: " + lineNum + "\nData: " + currentLine + "\nProblem(s):\n" + invalidInput);
+                    String[] invalidInput = nullInputCheck(lineArray).split("~"); //I bundled the flag that something changed into the string, this just separates it
+                    if (invalidInput[0].equals("true")) {
+                        output.add(lineNum + ": " + invalidInput[1]);
                         continue;
                     }
 
@@ -136,7 +135,7 @@ public class Parser {
                     
                 }
             } catch (Exception e) {
-                System.out.println(e.toString());
+                System.out.println("HERE" + e.toString());
                 return output;
             }
 
@@ -351,45 +350,110 @@ public class Parser {
 
     public static String nullInputCheck(String[] input) {
         String output = "";
+        String[] out = new String[16];
+        boolean flag = false;
 
-        if (input[3].equals("") || !isInt(input[3])) {
-            output += "Missing/Invalid Class Number\n";
+        if (input.length < 16) {
+            flag = true;
+            for (int i = 0; i < input.length; i++) {
+                out[i] = input[i];
+            }       
+            for (int i = input.length; i < 16; i++) {
+                out[i] = "";
+            }
+            input = out;
+            output += "Line Incomplete\n";
         }
 
-        if (input[1].equals("") || !isInt(input[1])) {
-            output += "Missing/Invalid Course Number\n";
+        //CLASS NUMBER CHECK
+        if (!input[3].equals("") && !isInt(input[3])) {
+            flag = true;
+            input[3] = "*INVALID*";
+            output += "Invalid Class Number\n";
+        }
+        else if (input[3].equals("")) {
+            flag = true;
+            input[3] = "*MISSING*";
+            output += "Missing Class Number\n";
         }
 
-        if (input[4].equals("") || !isInt(input[4])) {
-            output += "Missing/Invalid Associated Class Number\n";
+        //COURSE NUMBER CHECK
+        if (!input[1].equals("") && !isInt(input[1])) {
+            flag = true;
+            input[1] = "*INVALID*";
+            output += "Invalid Course Number\n";
+        }
+        else if (input[1].equals("")) {
+            flag = true;
+            input[1] = "*MISSING*";
+            output += "Missing Course Number\n";
         }
 
+        //ASSOCIATED CLASS NUMBER CHECK
+        if (!input[4].equals("") && !isInt(input[4])) {
+            flag = true;
+            input[4] = "*INVALID*";
+            output += "Invalid Associated Class Number\n";
+        }
+        else if (input[4].equals("")) {
+            flag = true;
+            input[4] = "*MISSING*";
+            output += "Missing Associated Class Number\n";
+        }
+
+        //DAYS CHECK
         if (  !  (
             doesDayStringHaveDay(input[5], 0) ||
             doesDayStringHaveDay(input[5], 1) ||
             doesDayStringHaveDay(input[5], 2) ||
             doesDayStringHaveDay(input[5], 3) ||
             doesDayStringHaveDay(input[5], 4))) {
+            flag = true;
+            input[5] = "*" + input[5] + "*";
             output += "Missing/Invalid Class Days\n";
         }
 
+        //START TIME CHECK
         if (!isTime(input[6])) {
-            output += "Missing/Invalid Start Time\n";
+            flag = true;
+            if (input[6].equals("")) {
+                input[6] = "*MISSING*";
+                output += "Missing Start Time\n";
+            }
+            else {
+                input[6] = "*" + input[6] + "*";
+                output += "Invalid Start Time\n";
+            }
         }
 
+        //END TIME CHECK
         if (!isTime(input[7])) {
-            output += "Missing/Invalid End Time\n";
+            flag = true;
+            if (input[7].equals("")) {
+                input[7] = "*MISSING*";
+                output += "Missing Start Time\n";
+            }
+            else {
+                input[7] = "*" + input[7] + "*";
+                output += "Invalid Start Time\n";
+            }
         }
 
+        //INSTRUCTOR CHECK
         if (input[9].equals("") && (input[13].equals("LEC") || input[13].equals("PRA") || input[13].equals("SEM"))) {
-            output += "Missing Instructor";
+            flag = true;
+            input[9] = "*MISSING*";
+            output += "Missing Instructor\n";
         }
 
-        if (input[15].equals("") || !isInt(input[15])) {
-            output += "Missing/Invalid Enrollment Number\n";
+        //TYPE CHECK
+        if (input[13].equals("")) {
+            flag = true;
+            input[13] = "*MISSING*";
+            output += "Missing Class Type\n";
         }
 
-        return output;
+        return flag + "~" + String.join("," , input) + "\n" + output;
     }
 
     public static boolean isInt(String input) {
@@ -403,9 +467,6 @@ public class Parser {
     }
 
     public static boolean isTime(String input) {
-        if (input.matches("^([0-9]|0[0-9]|1[0-2]):[0-5][0-9] (AM|PM)$")) {
-            return true;
-        }
-        return false;
+        return input.matches("^([0-9]|0[0-9]|1[0-2]):[0-5][0-9] (AM|PM|Am|am|Pm|pm)$");
     }
 }
