@@ -82,7 +82,7 @@ public class Query {
         int impactArray[] = new int[RULES];
 
         //RULE 2: RECITATION OVERLAP CHECK
-        typeStringsArray[0] = "Recitation of same section overlap";
+        typeStringsArray[0] = "Recitations of the same section overlap";
         impactArray[0] = 3;
         secondSql[0] = "SELECT *" 
                         + " FROM classes"
@@ -124,7 +124,7 @@ public class Query {
                         + " OR day_fri AND "+ "~day_fri" + ")";
 
         //RULE 4: RECITATION FOR ALL COURSE NUM OVERLAP CHECK
-        typeStringsArray[2] = "Recitation of any section overlap";
+        typeStringsArray[2] = "Recitations of any section overlap";
         impactArray[2] = 2;
         secondSql[2] = "SELECT *" 
                         + " FROM classes"
@@ -212,7 +212,7 @@ public class Query {
             String typeStringsArray[] = new String[RULES];
             int impactArray[] = new int[RULES];
 
-            //RULE 4: TEACHER PROXIMITY CHECK
+            //RULE 6: TEACHER PROXIMITY CHECK
             typeStringsArray[0] = "TIME BETWEEN CHECK";
             impactArray[0] = 1;
             secondSql [0] = "SELECT *" 
