@@ -44,7 +44,7 @@ jobs:
           cache: maven
       
       - name: Build jar
-        run: mvn -B clean package
+        run: mvn -B clean package -Dvaadin.force.production.build=true
       
       - name: Prepare packaging folder (macOS/linux)
         if: runner.os != 'Windows'
