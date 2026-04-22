@@ -18,4 +18,5 @@
     - Rule 7:       Lecture overlap with recitation check
     - Rule 8:       Crosslisted in different rooms
     - Rule 9:       Crosslisted with different instructors
-    - Rule 10:      Courses in same room at same time 
+    - Rule 10:      Crosslisted with different times 
+    - Rule 11:      Courses in same room at same time 
