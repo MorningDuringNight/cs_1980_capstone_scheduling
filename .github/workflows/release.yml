@@ -1,0 +1,91 @@
+name: Build Installers
+
+on:
+  push:
+    branches: [ "main" ]
+  release:
+    types:  [published]
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on:  ${{ matrix.os }}
+
+    defaults:
+      run:
+        working-directory: capstone-scheduling
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            package_type: dmg
+            icon_path: packaging/icon.icns
+            artifact_name: Schedule-Validator-macos
+          - os: windows-latest
+            package_type: exe
+            icon_path: packaging/icon.ico
+            artifact_name: Schedule-Validator-windows
+          - os: ubuntu-latest
+            package_type: deb
+            icon_path: packaging/icon.png
+            artifact_name: Schedule-Validator-linux
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+      
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      
+      - name: Build jar
+        run: mvn -B clean package
+      
+      - name: Prepare packaging folder (macOS/linux)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p packaging/input
+          cp target/capstone-scheduling-V1.0.jar packaging/input/
+      
+      - name: Preparing packaging folder (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path packaging/input
+          Copy-Item target/capstone-scheduling-V1.0.jar packaging/input/
+      
+      - name: Run jpackage (macOS/linux)
+        if: runner.os != 'Windows'
+        run: |
+          jpackage \
+            --type "${{ matrix.package_type }}" \
+            --name "Capstone Schedule Validator" \
+            --input packaging/input \
+            --main-jar "$(basename target/*.jar)" \
+            --icon "${{ matrix.icon_path }}" \
+            --dest dist
+        
+      - name: Run jpackage (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $jar = (Get-ChildItem target\*.jar | Select-Object -First 1).Name
+          jpackage `
+            --type "${{ matrix.package_type }}" `
+            --name "Capstone Schedule Validator" `
+            --input packaging/input `
+            --main-jar "$jar" `
+            --icon "${{ matrix.icon_path }}" `
+            --dest dist
+      
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: capstone-scheduling/dist/
+          

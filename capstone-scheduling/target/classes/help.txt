@@ -7,4 +7,15 @@
     - Validation Results will be output to page
     - Otherwise an Error will appear
 
-3. (WIP)
+3. Rules:
+    - Pre-Check:    Lecture/Pra/Seminar missing Instructor
+    - Rule 1:       Lecture overlap with other of same course num check 
+    - Rule 2:       Recitation overlap check
+    - Rule 3:       Recitation time between check
+    - Rule 4:       Recitation for all course num overlap check
+    - Rule 5:       Recitation time between check for all course num
+    - Rule 6:       Teacher proximity check
+    - Rule 7:       Lecture overlap with recitation check
+    - Rule 8:       Crosslisted in different rooms
+    - Rule 9:       Crosslisted with different instructors
+    - Rule 10:      Courses in same room at same time 

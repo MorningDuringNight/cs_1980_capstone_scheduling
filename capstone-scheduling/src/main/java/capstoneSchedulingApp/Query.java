@@ -1,5 +1,6 @@
 package capstoneSchedulingApp;
 
+import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.ArrayList;
@@ -323,113 +324,45 @@ public class Query {
             return null;
     }
 
-    public static void queryTestCrossRoom(String databaseName) {
-        String url = "jdbc:sqlite:" + databaseName;
+    public static ArrayList<Collision> queryTestCrossRoom(String databaseName) {
+        String firstSql = "SELECT * "
+                        + " FROM classes "
+                        + " WHERE id == " + "~i"
+                        + " AND room != 'TBA'"
+                        + " AND room != ''";
+        
+        final int RULES = 1;
+        String secondSql[] = new String[RULES];
+        String typeStringsArray[] = new String[RULES];
+        int impactArray[] = new int[RULES];
 
-        for (int h = 1; h <= tableLength(databaseName, "instructors"); h++) {
-            String sql =  "SELECT *" 
-                        + " FROM instructors" 
-                        + " WHERE id == " + h
-                        + " AND instructor != ''";
+        typeStringsArray[0] = "CROSS-LISTED ROOM MISMATCH";
+        impactArray[0] = 2;
+        secondSql[0] = "SELECT * "
+                    + " FROM classes "
+                    + " WHERE id > " + "~i"
+                    + " AND type == '~type'"
+                    + " AND " + CROSS_LISTED_EXISTS
+                    + " AND room != '~room'"
+                    + " AND TRIM(room) != 'TBA'"
+                    + " AND TRIM(room) != ''"
+                    + " AND (" + "~start_int"  + " < end_int"
+                    + " AND start_int < " + "~end_int" + ")";
 
-            String inst = "";
-
-            try (Connection dbConnection = DriverManager.getConnection(url);
-                var statement = dbConnection.prepareStatement(sql)) {
-
-                var rs = statement.executeQuery();
-
-                while (rs.next()) {
-                    inst = rs.getString("instructor");
-                }
-
-            } catch (Exception e) {
-                    System.out.println(e.toString());
-                    return;
-            }
-
-            //If initial query failed skip to next loop
-            if (inst == "") {
-                continue;
-            }
-
-
-            // for each class for instructor
-            for (int i = 1; i <= tableLength(databaseName, "classes"); i++) {
-                sql     =     "SELECT *" 
-                            + " FROM classes" 
-                            + " WHERE id == " + i
-                            + " AND instructor == '" + inst +"'";
-
-                Course A = new Course();
-                ArrayList<Course> B = new ArrayList<Course>();
-
-                try (Connection dbConnection = DriverManager.getConnection(url);
-                    var statement = dbConnection.prepareStatement(sql)) {
-
-                    var rs = statement.executeQuery();
-
-                    while (rs.next()) {
-                        A = new Course(rs);
-                    }
-
-                } catch (Exception e) {
-                        System.out.println(e.toString());
-                        return;
-                }
-
-                //If initial query failed skip to next loop
-                if (A.clas_num == -1) {
-                    continue;
-                }
-
-                sql =         "SELECT *" 
-                            + " FROM classes"
-                            + " WHERE id != " + "~i"
-                            //Checks that both instances are Lectures of the same Course Number
-                            + " AND instructor == '" + "~instructor" + "'"
-                            //Condition of the class times overlapping at all
-                            // + " AND (" + A.start_int  + " <= end_int"
-                            // + " AND start_int <= " + A.end_int + ")"
-                            //check for class and associated from original to cross List
-                            + " AND clas_num == "  + ("~clas_num+1")
-                            + " AND " + "~asso_num"  + " == asso_num"
-                            //Condtion to make sure class shares at least one day of the week
-                            + " AND (day_mon AND " + "~day_mon"
-                            + " OR day_tues AND " + "~A.day_tues"
-                            + " OR day_wed AND " + "~day_wed"
-                            + " OR day_thurs AND " + "~day_thurs"
-                            + " OR day_fri AND "+ "~day_fri" + ")";
-
-                try (Connection dbConnection = DriverManager.getConnection(url);
-                var statement = dbConnection.prepareStatement(sql)) {
-
-                    var rs = statement.executeQuery();
-
-                    while (rs.next()) {
-                        B.add(new Course(rs));           
-                    }
-
-                } catch (Exception e) {
-                        System.out.println(e.toString());
-                        return;
-                }
-
-                for(Course match: B) {
-                    System.out.println("Checking Cross listed courses for rooms");
-                    if(!A.room.equals(match.room)) {
-                        System.out.println("Cross listed courses in different rooms: " + A.toString() + " AND " + match.toString());
-                    }
-                }
-            }
+        ArrayList<Collision> queryOutput = queryEachInCourse(databaseName, firstSql, secondSql, typeStringsArray, impactArray);
+        for (Collision e : queryOutput) {
+            System.out.println(e.toString());
         }
+
+        return queryOutput;
     }
 
-    public static ArrayList<Collision> crossProf(String databaseName) {
+    public static ArrayList<Collision> queryCrossProf(String databaseName) {
         String firstSql = "SELECT *"
                         + " FROM classes"
                         + " WHERE id == " + "~i"
-                        + " AND type == 'LEC' ";
+                        + " AND TRIM(instructor) != 'TBD' "
+                        + " AND TRIM(instructor) != ''";
 
         final int RULES = 1;
         String secondSql[]       = new String[RULES];
@@ -440,85 +373,107 @@ public class Query {
         impactArray[0] = 2;
         secondSql[0] = "SELECT *"
                     + " FROM classes"
-                    + " WHERE id != " + "~i"
-                    + " AND type == 'LEC'"
-                    // Cross-listed partner: same asso_num, clas_num offset by ±1
-                    + " AND asso_num == " + "~asso_num"
-                    + " AND (clas_num == (" + "~clas_num" + " + 1)"
-                    + " OR clas_num == (" + "~clas_num" + " - 1))"
+                    + " WHERE id > " + "~i"
+                    + " AND type == '~type'"
+                    + " AND " + CROSS_LISTED_EXISTS
                     // Instructor differs from base course and is not empty
-                    + " AND instructor != '" + "~instructor" + "'"
-                    + " AND instructor != ''";
+                    + " AND TRIM(instructor) != ''"
+                    + " AND TRIM(instructor) != 'TBD'";
 
 
         ArrayList<Collision> queryOutput = queryEachInCourse(databaseName, firstSql, secondSql, typeStringsArray, impactArray);
-        System.out.println("Output: ");
+        ArrayList<Collision> filtered = new ArrayList<Collision>();
+        for (Collision col : queryOutput) {
+            ArrayList<Course> mismatch = new ArrayList<Course>();
+            for (Course c : col.hits) {
+                if(!col.base.instructor.trim().equals(c.instructor.trim())) {
+                    mismatch.add(c);
+                }
+            }
+            if(!mismatch.isEmpty()) {
+                col.hits = mismatch;
+                filtered.add(col);
+            }
+        }
+
+        for (Collision e : filtered) {
+            System.out.println(e.toString());
+        }
+        return filtered;
+    }
+
+    public static ArrayList<Collision> queryCrossTime(String databaseName) {
+        String firstSql = "SELECT * "
+                        + " FROM classes "
+                        + " WHERE id == " + "~i";
+        
+        final int RULES = 1;
+        String secondSql[] = new String[RULES];
+        String typeStringsArray[] = new String[RULES];
+        int impactArray[] = new int[RULES];
+
+        typeStringsArray[0] = "CROSS-LISTED Classes Have Different Times";
+        impactArray[0] = 2;
+        secondSql[0] = "SELECT * "
+                    + " FROM classes "
+                    + " WHERE id > " + "~i"
+                    + " AND type == '~type'"
+                    + " AND " + CROSS_LISTED_EXISTS
+                    + " AND NOT (" + "~start_int"  + " < end_int"
+                    + " AND start_int < " + "~end_int" + ")"
+                    + " AND  (day_mon AND " + "~day_mon"
+                    + " OR day_tues AND " + "~day_tues"
+                    + " OR day_wed AND " + "~day_wed"
+                    + " OR day_thurs AND " + "~day_thurs"
+                    + " OR day_fri AND "+ "~day_fri" + ")";
+
+        ArrayList<Collision> queryOutput = queryEachInCourse(databaseName, firstSql, secondSql, typeStringsArray, impactArray);
         for (Collision e : queryOutput) {
             System.out.println(e.toString());
         }
+
         return queryOutput;
     }
 
-    public static void queryRoomCollision(String databaseName) {
-        String url = "jdbc:sqlite:" + databaseName;
 
-        for (int i = 1; i <= tableLength(databaseName, "classes"); i++) {
-            String sql = "SELECT * "
-                                + "FROM classes "
-                                + "WHERE id == " + "~i";
+    public static ArrayList<Collision> queryRoomCollision(String databaseName) {
+        String firstSql = "SELECT * "
+                        + " FROM classes "
+                        + " WHERE id == " + "~i"
+                        + " AND room != 'TBA'"
+                        + " AND room != ''"
+                        + " AND room != 'WEB'"
+                        + " AND days != ''";
 
-            Course A = new Course();
-            ArrayList<Course> B = new ArrayList<Course>();
+        final int RULES = 1;
+        String secondSql[] = new String[RULES];
+        String typeStringsArray[] = new String[RULES];
+        int impactArray[] = new int[RULES];
 
-            try (Connection dbConnection = DriverManager.getConnection(url);
-                var statement = dbConnection.prepareStatement(sql)) {
-                var rs = statement.executeQuery();
-                
-                while (rs.next()) { 
-                    A = new Course(rs); 
-                }
-            } 
-            catch (Exception e) {
-                System.out.println(e.toString());
-                return;
-            }
+        typeStringsArray[0] = "ROOM COLLISION";
+        impactArray[0] = 3;
+        secondSql[0] = "SELECT * "
+                    + " FROM classes "
+                    + " WHERE id > " + "~i"
+                    + " AND room ==  '~room'"
+                    + " AND TRIM(room) != 'TBA'"
+                    + " AND room != ''"
+                    + " AND room != 'WEB'"
+                    + " AND (" + "~start_int"  + " < end_int"
+                    + " AND start_int < " + "~end_int" + ")"
+                    + " AND (day_mon AND " + "~day_mon"
+                    + " OR day_tues AND " + "~day_tues"
+                    + " OR day_wed AND " + "~day_wed"
+                    + " OR day_thurs AND " + "~day_thurs"
+                    + " OR day_fri AND "+ "~day_fri" + ")"
+                    + " AND NOT" + CROSS_LISTED_EXISTS;
 
-            sql = "SELECT *"
-                + " FROM classes"
-                + " WHERE id != " + i
-                // Same room
-                + " AND room == '" + "~room" + "'"
-                // Overlapping times
-                + " AND (" + "~start_int" + " <= end_int"
-                + " AND start_int <= " + "~end_int" + ")"
-                // Same day
-                + " AND (day_mon AND " + "~day_mon"
-                + " OR day_tues AND " + "~day_tues"
-                + " OR day_wed AND " + "~day_wed"
-                + " OR day_thurs AND " + "~day_thurs"
-                + " OR day_fri AND " + "~day_fri" + ")"
-                // Not a cross listed course (clas_num not off by 1 with same asso_num)
-                + " AND NOT (asso_num == " + "~asso_num"
-                + " AND (clas_num == " + "(" + "~clas_num" + " + 1)"
-                + " OR clas_num == " + "(~clas_num - 1)" + "))";
-
-            try (Connection dbConnection = DriverManager.getConnection(url);
-                var statement = dbConnection.prepareStatement(sql)) {
-                var rs = statement.executeQuery();
-
-                while (rs.next()) { 
-                    B.add(new Course(rs)); 
-                }
-            } 
-            catch (Exception e) {
-                System.out.println(e.toString());
-                return;
-            }
-
-            for (Course match : B) {
-                System.out.println("Room collision: " + A.toString() + " AND " + match.toString());
-            }
+        ArrayList<Collision> queryOutput = queryEachInCourse(databaseName, firstSql, secondSql, typeStringsArray, impactArray);
+        for (Collision e : queryOutput) {
+            System.out.println(e.toString());
         }
+    
+        return queryOutput;
     }
     
     //Instructor conseq courses
@@ -618,6 +573,15 @@ public class Query {
             }
         }
     }
+
+    private static final String CROSS_LISTED_EXISTS = 
+          " EXISTS ("
+        + " SELECT 1 FROM cross_listed c1"
+        + " WHERE (c1.sub_code_a == '~sub_code' AND c1.course_num_a == ~course_num"
+        + "         AND c1.sub_code_b == classes.sub_code AND c1.course_num_b == classes.course_num)"
+        + " OR (c1.sub_code_b == '~sub_code' AND c1.course_num_b == ~course_num"
+        + "         AND c1.sub_code_a == classes.sub_code AND c1.course_num_a == classes.course_num)"
+        + " )";
 
     public static int tableLength(String databaseName, String table) {
         String url = "jdbc:sqlite:" + databaseName;

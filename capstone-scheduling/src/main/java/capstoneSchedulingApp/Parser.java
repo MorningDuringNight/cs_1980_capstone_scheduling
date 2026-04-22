@@ -12,7 +12,7 @@ public class Parser {
 
     public static ArrayList<String> parseFile(String databaseName, String fileName, String delin) {
         String url = "jdbc:sqlite:" + databaseName;
-        ArrayList<String> output = new ArrayList<String>();
+        ArrayList<String> output = new ArrayList<>();
 
         try (Connection dbConnection = DriverManager.getConnection(url);
             var statement = dbConnection.createStatement()) {
@@ -94,7 +94,7 @@ public class Parser {
 
                     /*Line entry number check
                     if (lineArray.length != 16) {
-                        output.add(lineNum + ": " + currentLine + "\nMissing information\n");
+                        output.add("Row: " + lineNum + "\nData: " + currentLine + "\nProblem: Missing information\n");
                         continue;
                     }*/
 
@@ -219,6 +219,71 @@ public class Parser {
         catch (SQLException e) {            
             System.out.println(e.getMessage());
         }
+        createCrossListedTable(databaseName);
+    }
+
+    public static void createCrossListedTable(String databaseName) {
+        String url = "jdbc:sqlite:" + databaseName;
+
+        try (Connection dbConnection = DriverManager.getConnection(url);
+            var statement = dbConnection.createStatement()) {
+                
+                statement.execute("DROP TABLE IF EXISTS cross_listed");
+
+                String createSQL = "CREATE TABLE cross_listed ("
+                    + " id INTEGER PRIMARY KEY,"
+                    + " sub_code_a STRING,"
+                    + " course_num_a INTEGER,"
+                    + " sub_code_b STRING,"
+                    + " course_num_b INTEGER"
+                    + ")";
+
+                statement.execute(createSQL);
+                System.out.println("Created Cross-Listed DB");
+
+                String insertSQL = "INSERT INTO cross_listed("
+                    + "sub_code_a, "
+                    + "course_num_a, "
+                    + "sub_code_b, "
+                    + "course_num_b) "
+                    + "VALUES(?, ?, ?, ?)";
+                var insertStatement = dbConnection.prepareStatement(insertSQL);
+
+                String[][] pairs = {
+                    {"CS", "1501", "CS", "2015"},
+                    {"CS", "1510", "CS", "2012"},
+                    {"CS", "1511", "CS", "2110"},
+                    {"CS", "1530", "CS", "2030"},
+                    {"CS", "1541", "CS", "2041"},
+                    {"CS", "1555", "CS", "2055"},
+                    {"CS", "1621", "CS", "2021"},
+                    {"CS", "1635", "CS", "2035"},
+                    {"CS", "1640", "CS", "1980"},
+                    {"CS", "1651", "CS", "2051"},
+                    {"CS", "1656", "CS", "2056"},
+                    {"CS", "1660", "CS", "2060"},
+                    {"CS", "1671", "CS", "2071"},
+                    {"CS", "1674", "CS", "2074"},
+                    {"CS", "1675", "CS", "2075"},
+                    {"CS", "1678", "CS", "2078"},
+                    {"CS", "1684", "CS", "2084"},
+                    {"CS", "1900", "CS", "1950"},
+                    {"CS", "2520", "TELCOM", "2321"},
+                    {"CS", "2710", "ISSP", "2160"},
+                    {"CS", "2731", "ISSP", "2230"},
+                };
+
+                for (String[] pair : pairs) {
+                    insertStatement.setString(1, pair[0]);
+                    insertStatement.setInt(2, Integer.parseInt(pair[1]));
+                    insertStatement.setString(3, pair[2]);
+                    insertStatement.setInt(4, Integer.parseInt(pair[3]));
+                    insertStatement.executeUpdate();
+                }
+            }
+            catch(SQLException e) {
+                System.out.println(e.getMessage());
+            }
     }
 
     //0 - Mon, 1 - Tues, 2 - Wed, 3 - Thurs, 4 - Fri
