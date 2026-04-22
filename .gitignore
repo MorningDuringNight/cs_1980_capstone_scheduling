@@ -8,3 +8,4 @@ capstone-scheduling/target/
 capstone-scheduling/frontend/
 **/frontend/
 capstone-scheduling/.dockerignore
+capstone-scheduling/target/classes/capstoneSchedulingApp/Parser.class
