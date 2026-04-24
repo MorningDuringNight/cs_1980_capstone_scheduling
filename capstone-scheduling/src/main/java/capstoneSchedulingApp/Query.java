@@ -336,7 +336,7 @@ public class Query {
         String typeStringsArray[] = new String[RULES];
         int impactArray[] = new int[RULES];
 
-        typeStringsArray[0] = "CROSS-LISTED ROOM MISMATCH";
+        typeStringsArray[0] = "Cross-Listed Room Mismatch";
         impactArray[0] = 2;
         secondSql[0] = "SELECT * "
                     + " FROM classes "
@@ -369,7 +369,7 @@ public class Query {
         String typeStringsArray[] = new String[RULES];
         int impactArray[]         = new int[RULES];
 
-        typeStringsArray[0] = "CROSS-LISTED INSTRUCTOR MISMATCH";
+        typeStringsArray[0] = "Cross-Listed Instructor Mismatch";
         impactArray[0] = 2;
         secondSql[0] = "SELECT *"
                     + " FROM classes"
@@ -412,7 +412,7 @@ public class Query {
         String typeStringsArray[] = new String[RULES];
         int impactArray[] = new int[RULES];
 
-        typeStringsArray[0] = "CROSS-LISTED Classes Have Different Times";
+        typeStringsArray[0] = "Cross-Listed Classes Have Different Times";
         impactArray[0] = 2;
         secondSql[0] = "SELECT * "
                     + " FROM classes "

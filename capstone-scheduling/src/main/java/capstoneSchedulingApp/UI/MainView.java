@@ -439,6 +439,8 @@ public class MainView extends AppLayout{
         validationResults.addAll(Query.queryTestCrossRoom(databaseFilePath));
         validationResults.addAll(Query.queryCrossProf(databaseFilePath));
         validationResults.addAll(Query.queryRoomCollision(databaseFilePath));
+        validationResults.addAll(Query.queryCrossTime(databaseFilePath));
+
         removeDuplicateCollisions(validationResults);
         return validationResults;
     }
@@ -584,39 +586,13 @@ public class MainView extends AppLayout{
         Div errorCard = new Div();
         errorCard.getStyle().set("border", "1px solid var(--lumo-contrast-10pct)").set("border-radius", "8px").set("padding", "0.75rem").set("background", "var(--lumo-base-color)").set("white-space", "normal");
         String [] lines = rawError.split("\\n");
-        String row = "";
-        String data = "";
         StringBuilder problem = new StringBuilder();
         for (String line : lines){
-            if(line.startsWith("Row:"))
-                row = line.substring("Row:".length()).trim();
-            else if(line.startsWith("Data:"))
-                data = formatParsingData(line.substring("Data:".length()).trim());
-            else if(line.startsWith("Problem(s):")){
-                String text = line.substring("Problem(s):".length()).trim();
-                if(!text.isEmpty()){
-                    if(problem.length() > 0)
-                        problem.append("<br>");
-                    problem.append(escapeHtml(text));
-                }
-            }
-            else if(line.startsWith("Problem:")){
-                String text = line.substring("Problem:".length()).trim();
-                if(!text.isEmpty()){
-                    if(problem.length() > 0)
-                        problem.append("<br>");
-                    problem.append(escapeHtml(text));
-                }
-            }
-            else if(!line.trim().isEmpty()){
-                if(problem.length()>0)
-                    problem.append("<br>");
-                problem.append(escapeHtml(line.trim()));
-            }
+            problem.append("<br>");
+            problem.append(escapeHtml(line));
         }
-        String problemLabel = problem.toString().contains("<br>") ? "Problems:" : "Problem:";
         //Formats HTML so the line breaks and labels display cleanly in the dialog
-        errorCard.getElement().setProperty("innerHTML", "<b>Row:</b> " + escapeHtml(row) + "<br>" + "<b>Data:</b> " + escapeHtml(data) + "<br>" + "<b>" + problemLabel + "</b> " + problem.toString());
+        errorCard.getElement().setProperty("innerHTML", "<b>" + problem + "</b> ");
         return errorCard;
     }
 

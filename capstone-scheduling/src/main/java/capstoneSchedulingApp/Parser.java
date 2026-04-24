@@ -101,7 +101,7 @@ public class Parser {
                     //Invalid Input Check
                     String[] invalidInput = nullInputCheck(lineArray).split("~"); //I bundled the flag that something changed into the string, this just separates it
                     if (invalidInput[0].equals("true")) {
-                        output.add(lineNum + ": " + invalidInput[1]);
+                        output.add("Row: "  + lineNum + "\n\t" + invalidInput[1]);
                         continue;
                     }
 
